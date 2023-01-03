@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Transactions</title>
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+	<link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+
+	<style type="text/css">
+		body{
+		  background: rgb(205, 17, 17);
+		  background: linear-gradient(90deg, rgb(167, 12, 12) 0%, rgb(126, 105, 7) 43%, rgb(8, 70, 82) 100%);
+		}
+
+
+		h1, h2, h3, h4, h5, p, span, strike{
+		  font-family: 'Montserrat', sans-serif;
+
+		}
+
+
+		#task-container{
+		  max-width:600px;
+		  margin:0 auto;
+		  box-shadow: 0 14px 28px rgba(19, 206, 213, 0.25), 0 10px 10px rgba(9, 236, 236, 0.22);
+		  background-color: #fff;
+		  
+		  margin-top:100px;
+		  margin-bottom:100px;
+
+		  justify-content: space-around;
+		  align-items: flex-start;
+
+		}
+
+		#form-wrapper{
+		  position: -webkit-sticky;
+		  /* position: sticky; */
+		  top: 0rem;
+		  border-bottom: 1px solid  #0dcadb;
+		  background-color: #fff;
+		  box-shadow: 0 3px 8px rgba(12, 183, 230, 0.25);
+ 		  padding:40px;
+		}
+
+		#submit{
+		  background-color: #36d9b6;
+		  border-radius: 0;
+		  border:0;
+		  color: #fff;
+		}
+
+		.flex-wrapper{
+			display: flex;
+		}
+
+		.task-wrapper{
+		  	margin:5px;
+		  	padding: 5px;
+		  	padding:20px;
+		  	cursor: pointer;
+		  	border-bottom: 1px solid  #0c596e;
+		  	color: #08ed60;
+			}
+
+	</style>
+
+</head>
+<body>
+	<h1 style="text-align: center;">Welcome{{request.user}} <a style="text-decoration: none;color: rgb(57, 26, 214);" href="{%url 'logout_request' %}">Logout</a></h1>
+	
+	<div class="container">
+		<div style="justify-content: center;">{%for i in final%}
+			<h1 style="text-align: center;">{{i}}</h1>
+			{%endfor%}</div>
+
+		<div id="task-container">
+			<div id="form-wrapper">
+				<form id="form">
+					<div class="flex-wrapper">
+						<div style="flex: 6">
+						 
+							{%for f in forms%}
+							<div style="flex:auto">
+								{%if f.label == "Member"%}
+								<div id = "member">{{f.label}}
+									{{f}}</div>
+									{%else%}
+									{{f.label}}
+								{{f}}
+									{%endif%}
+								</div>
+								
+							{%endfor%}
+
+
+				 
+							<div style="display: grid;align-items: center;"><input id="submit" class="btn" type="submit" ></div>
+						</div>
+					</div>
+				</form>
+			</div>
+
+			<div id="list-wrapper">
+			
+			</div>	
+		</div>
+
+	</div>
+
+	<script type="text/javascript">
+
+		function getCookie(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie !== '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = cookies[i].trim();
+		           
+		            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+		var csrftoken = getCookie('csrftoken');
+
+		var activeItem = null
+		var list_snapshot = []
+
+		buildList()
+
+		function buildList(){
+			var wrapper = document.getElementById('list-wrapper')
+			//wrapper.innerHTML = ''
+
+
+
+			var url = 'http://127.0.0.1:8000/api/trans-list'
+
+			fetch(url)
+			.then((resp) => resp.json())
+			.then(function(data){
+				console.log('Data:', data)
+
+				var list = data
+				for (var i in list){
+
+
+					try{
+						document.getElementById(`data-row-${i}`).remove()
+					}catch(err){
+
+					}
+			
+
+
+					var title = `<span class="title">${list[i].category}</span>`
+					var amount = `<span class = "amount">${list[i].amount}</span>`
+					var paidby =  `<span class = "amount">${list[i].paidby}</span>`
+				 
+
+					var item = `
+						<div id="data-row-${i}" class="task-wrapper flex-wrapper">
+							<div style="flex:7">
+								${title}
+							</div>
+							<div style="flex:7">
+								Rs ${amount}
+							</div>
+							<div style="flex:7">
+							      ${paidby}
+							</div>
+							<div style="flex:1">
+								<button class="btn btn-sm btn-outline-info detail"><a style = "color:#36d9b6;text-decorartion : None" href = 'detail/${list[i].id}'> Detail</a> </button>
+							</div>
+							<div style="flex:1">
+								<button class="btn btn-sm btn-outline-info edit">Edit </button>
+							</div>
+							<div style="flex:1">
+								<button class="btn btn-sm btn-outline-dark delete">-</button>
+							</div>
+						</div>
+
+					`
+					wrapper.innerHTML += item
+	
+				}
+
+				if (list_snapshot.length > list.length){
+					for (var i = list.length; i < list_snapshot.length; i++){
+						document.getElementById(`data-row-${i}`).remove()
+					}
+				}
+
+				list_snapshot = list
+
+
+				for (var i in list){
+					var editBtn = document.getElementsByClassName('edit')[i]
+					var deleteBtn = document.getElementsByClassName('delete')[i]
+					var title = document.getElementsByClassName('title')[i]
+				
+
+
+					editBtn.addEventListener('click', (function(item){
+						return function(){
+							editItem(item)
+						}
+					})(list[i]))
+
+
+					deleteBtn.addEventListener('click', (function(item){
+						return function(){
+							deleteItem(item)
+						}
+					})(list[i]))
+
+
+
+
+					
+					title.addEventListener('click', (function(item){
+						return function(){
+							strikeUnstrike(item)
+						}
+					})(list[i]))
+
+
+				}
+
+
+			})
+		}
+
+
+		var form = document.getElementById('form-wrapper')
+		form.addEventListener('submit', function(e){
+			e.preventDefault()
+			console.log('Form submitted')
+			var url = 'http://127.0.0.1:8000/api/trans-create'
+			if (activeItem != null){
+				var url = `http://127.0.0.1:8000/api/trans-update/${activeItem.id}`
+				activeItem = null
+			}
+
+
+
+			var date = document.getElementById('date').value
+			var amount = document.getElementById('amount').value
+			var paidby = document.getElementById('paidby').options[document.getElementById('paidby').value].text
+			var category= document.getElementById('category').value
+			var member = document.getElementById('member').lastChild
+
+			var countryArray = [],i;
+	
+			for (i = 0; i < member.options.length ; i += 1) {
+                if (member.options[i].selected) {
+                
+					countryArray.push(member.options[i].value)
+                }
+            }
+		 
+            console.log(countryArray);
+			console.log(paidby)
+			console.log(category)
+			
+			
+			fetch(url, {
+				method:'POST',
+				headers:{
+					'Content-type':'application/json',
+					'X-CSRFToken':csrftoken,
+				},
+				body:JSON.stringify({'date':date,'amount':amount,'paidby':paidby,'category':category,'member':countryArray})
+			}
+			).then(function(response){
+				buildList()
+				document.getElementById('form').reset()
+			})
+		})
+		
+		function editItem(item){
+			console.log('Item clicked:', item)
+			activeItem = item
+			document.getElementById('amount').value = activeItem.amount
+			document.getElementById('category').value = activeItem.category
+			document.getElementById('date').value = activeItem.date
+		}
+
+
+		function deleteItem(item){
+			console.log('Delete clicked')
+			fetch(`http://127.0.0.1:8000/api/trans-delete/${item.id}`, {
+				method:'DELETE', 
+				headers:{
+					'Content-type':'application/json',
+					'X-CSRFToken':csrftoken,
+				}
+			}).then((response) => {
+				buildList()
+			})
+		}
+
+		function strikeUnstrike(item){
+			console.log('Strike clicked')
+
+			item.completed = !item.completed
+			fetch(`http://127.0.0.1:8000/api/trans-update/${item.id}`, {
+				method:'POST', 
+				headers:{
+					'Content-type':'application/json',
+					'X-CSRFToken':csrftoken,
+				},
+				body:JSON.stringify({'title':item.title, 'completed':item.completed})
+			}).then((response) => {
+				buildList()
+			})
+		}
+		
+
+
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+
+{%block content%}
+<section style="justify-content: center;">
+<table>
+    <tr>
+      <th scope="col">Category</th>
+      <th scope="col">Amount</th>
+      <th scope="col">Paid By</th>
+      <th scope="col">Users</th>
+      <th scope="Col">Date</th>
+    </tr>
+    <tr>
+      <td>{{trans.category}}</td>
+      <td>{{trans.amount}}</td>
+      <td>{{trans.paidby}}</td>
+      <td>{%for m in trans.member.all%}{{m.username}}
+        <br>{%endfor%}</td>
+      <td>{{trans.date}}</td>
+    </tr>
+    
+  </table>
+</section>
+
+
+
+
+{%endblock%}

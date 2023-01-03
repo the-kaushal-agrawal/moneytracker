@@ -1,0 +1,25 @@
+{% extends 'frontend/main.html' %}
+{% block content %}
+
+<div class="header-bar">
+    <h1>Sign in</h1>
+</div>
+
+<div class="card-body">
+    {%for msg in messages%}
+    {{msg}}
+    {%endfor%}
+    <form method="POST">
+        {% csrf_token %}
+        {{form.as_p}}
+        <input class="button" type="submit" value="Login">
+    </form>
+    <p>Not Registered? <a href="{% url 'register' %}">Sign up</a></p>
+</div>
+
+
+
+
+
+
+{% endblock content %}
